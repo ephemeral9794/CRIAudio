@@ -57,6 +57,7 @@ namespace CRIAudio.Decoder.HCA
     public class HCAData
     {
         public HCAInfo Info { get; set; } = new HCAInfo();
+        public HCAKey Key { get; set; }
         public byte[][] AudioData { get; set; }
     }
 }
