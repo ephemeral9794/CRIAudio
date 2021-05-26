@@ -10,9 +10,15 @@ namespace CRIAudio.Decoder.HCA {
         }
         public byte[] Table { get; } = new byte[256];
         ulong key;
+        ushort subkey;
         EncryptType type;
 
-        public HCAKey(ulong key) {
+        public HCAKey(ulong key, ushort subkey = 0) {
+            if (subkey != 0)
+			{
+                key *= ((ulong)subkey << 16) | ((ushort)~subkey + 2u);
+            }
+            this.subkey = subkey;
             this.key = key;
             this.type = EncryptType.Type56;
             this.Table.FillArray<byte>(0);
@@ -22,7 +28,8 @@ namespace CRIAudio.Decoder.HCA {
 
         public HCAKey(uint type) {
             this.Table.FillArray<byte>(0);
-            this.key = 0UL;
+            this.key = 0;
+            this.subkey = 0;
             switch (type) {
                 case 0:
                     this.type = EncryptType.Type0;
