@@ -69,6 +69,8 @@ namespace CRIAudio.Utility
 		}
 		//public static int DivideByRoundUp(this int value, int divisor) => (int)Math.Ceiling((double)value / divisor);
 		public static uint DivideByRoundUp(this uint value, uint divisor) => (uint)Math.Ceiling((double)value / divisor);
+		public static byte GetLowNibble(this byte value) => (byte)(value & 0x0F);
+		public static byte GetHighNibble(this byte value) => (byte)((value >> 4) & 0x0F);
 		public static List<string> ParseString(this byte[] data) {
 			return ParseString(new EndianBinaryReader(data));
 		}

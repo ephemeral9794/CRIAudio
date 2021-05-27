@@ -3,40 +3,40 @@ using CRIAudio.Utility;
 
 namespace CRIAudio.Decoder.HCA {
     public class HCAKey {
-        enum EncryptType {
+        public enum EncryptType {
             Type0 = 0,
             Type1 = 1,
             Type56 = 56
         }
         public byte[] Table { get; } = new byte[256];
-        ulong key;
-        ushort subkey;
-        EncryptType type;
+        public ulong Key { get; }
+        public ushort Subkey { get; }
+        public EncryptType Type { get; }
 
         public HCAKey(ulong key, ushort subkey = 0) {
             if (subkey != 0)
 			{
                 key *= ((ulong)subkey << 16) | ((ushort)~subkey + 2u);
             }
-            this.subkey = subkey;
-            this.key = key;
-            this.type = EncryptType.Type56;
-            this.Table.FillArray<byte>(0);
+            Subkey = subkey;
+            Key = key;
+            Type = EncryptType.Type56;
+            Table.FillArray<byte>(0);
 
             Init56();
         }
 
         public HCAKey(uint type) {
-            this.Table.FillArray<byte>(0);
-            this.key = 0;
-            this.subkey = 0;
+            Table.FillArray<byte>(0);
+            Key = 0;
+            Subkey = 0;
             switch (type) {
                 case 0:
-                    this.type = EncryptType.Type0;
+                    Type = EncryptType.Type0;
                     Init0(); 
                     break;
                 case 1:
-                    this.type = EncryptType.Type1;
+                    Type = EncryptType.Type1;
                     Init1(); 
                     break;
                 default:
@@ -77,7 +77,7 @@ namespace CRIAudio.Decoder.HCA {
         }
 
         private void Init56() {
-            var kc = BitConverter.GetBytes(key - 1);
+            var kc = BitConverter.GetBytes(Key - 1);
             var seed = new byte[16];
 			var base_r = new byte[16];
 			var base_c = new byte[16];

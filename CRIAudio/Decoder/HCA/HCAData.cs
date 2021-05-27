@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using CRIAudio.Utility;
 
@@ -214,5 +215,11 @@ namespace CRIAudio.Decoder.HCA
         public byte[][] AudioData { get; set; }
 
         private HCAData() { }
+
+		public void Decode()
+		{
+			var waves = new List<double>();
+
+		}
     }
 }

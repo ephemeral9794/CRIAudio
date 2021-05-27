@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using CRIAudio.Decoder.HCA;
 
 namespace CRIAudio.CLI
@@ -32,7 +33,18 @@ namespace CRIAudio.CLI
 			Console.WriteLine($"MS Stereo        : {info.MSStereo}");
 			Console.WriteLine();
 
-
+			var arrays = ArrayUnpacker.UnpackArrays(ArrayUnpacker.PackedTables);
+			for (var i = 0; i < arrays.Length; i++)
+			{
+				var builder = new StringBuilder();
+				builder.Append("[");
+				foreach (var v in arrays[i])
+				{
+					builder.Append($"{v},");
+				}
+				builder.Append("]");
+				Console.WriteLine($"{i}:{builder.ToString()}");
+			}
 		}
     }
 }
