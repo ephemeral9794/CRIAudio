@@ -219,7 +219,14 @@ namespace CRIAudio.Decoder.HCA
 		public void Decode()
 		{
 			var waves = new List<double>();
+			var frame = new HCAFrame(Info);
 
+            for (int i = 0; i < Info.FrameCount; i++)
+            {
+				var audio = AudioData[i];
+				Key.Decrypt(audio);
+                frame.DecodeFrame(audio, out double[,] output);
+            }
 		}
     }
 }
