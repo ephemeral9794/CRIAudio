@@ -54,6 +54,11 @@ namespace CRIAudio.Decoder.HCA
             0xEF,0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFF,0xFF,
         };
 
-        
+        public static byte[] ScaleInvertTable = {
+            15,14,14,14,14,14,14,13,13,13,13,13,13,12,12,12,
+            12,12,12,11,11,11,11,11,11,10,10,10,10,10,10,10,
+             9, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8, 7, 6, 6, 5,
+             4, 4, 4, 3, 3, 3, 2, 2, 2, 2, 1
+        };
     }
 }

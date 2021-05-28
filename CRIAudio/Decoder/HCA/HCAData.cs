@@ -225,6 +225,7 @@ namespace CRIAudio.Decoder.HCA
             {
 				var audio = AudioData[i];
 				Key.Decrypt(audio);
+				Console.Write($"Frame#{i}:");
                 frame.DecodeFrame(audio, out double[,] output);
             }
 		}

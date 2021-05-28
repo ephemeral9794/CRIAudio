@@ -87,20 +87,28 @@ namespace CRIAudio.Decoder.HCA
 			var reader = new BitReader(bin);
 
 			UnpackFrame(reader);
+
 			output = new double[8,128];
 		}
 
 		private bool UnpackFrame(BitReader reader) {
-			var sync = reader.GetUInt16();
+			var sync = reader.GetInt16();
 			if (sync != 0xffff) {
-
+				return false;
 			}
 
-			acceptableNoiseLevel = (int)reader.GetBit(9);
-			evaluationBoundary = (int)reader.GetBit(7);
+			acceptableNoiseLevel = reader.GetBit(9);
+			evaluationBoundary = reader.GetBit(7);
+			var packedNoiseLevel = (acceptableNoiseLevel << 8) - evaluationBoundary;
 
-			foreach(var channel in channels) {
-				channel.UnpackScale(reader, info.HfrGroupCount, info.Version);
+			foreach (var channel in channels) {
+				channel.UnpackScaleFactors(reader, info.HfrGroupCount, info.Version);
+				channel.UnpackIntensity(reader, info.HfrGroupCount, info.Version);
+
+				channel.CalculateResolution(packedNoiseLevel, athCurve, info.MinResolution, info.MaxResolution);
+
+				Console.WriteLine("ScaleFactors:" + channel.ScaleFactors.ToString(toStr: (n) => { return string.Format("{0,0:X2}",n);}));
+				Console.WriteLine("Intensity   :" + channel.Intensity.ToString(toStr: (n) => { return string.Format("{0,0:X2}", n); }));
 			}
 
 			return true;

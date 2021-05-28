@@ -115,7 +115,7 @@ namespace CRIAudio.Utility
 			foreach (var str in strs) {
 				sb.AppendFormat(format, str);
 			}
-			sb.AppendLine("]");
+			sb.Append(']');
 			return sb.ToString();
 		}
 		public static string ToString<T>(this T[] array, Func<T,string> toStr = null, string format = "{0},")
@@ -129,7 +129,7 @@ namespace CRIAudio.Utility
 			{
 				sb.AppendFormat(format, str);
 			}
-			sb.AppendLine("]");
+			sb.Append(']');
 			return sb.ToString();
 		}
 
