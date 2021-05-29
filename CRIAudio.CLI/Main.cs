@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using CRIAudio.Decoder.HCA;
+using CRIAudio.Utility;
 
 namespace CRIAudio.CLI
 {
@@ -102,21 +103,20 @@ namespace CRIAudio.CLI
 			var frame = new HCAFrame(info);
 			frame.DecodeFrame(data, out double[,] output);
 
-
 			//hca.Decode();
 
-			//var arrays = ArrayUnpacker.UnpackArrays(ArrayUnpacker.PackedTables);
-			//var quantizespectrumbits = (byte[][])arrays[0];
-			//var quantizespectrumvalue = (byte[][])arrays[1];
-			//var quantizedspectrumbits = (byte[][])arrays[2];
-			//var quantizedspectrummaxbits = (byte[])arrays[3];
-			//var quantizedspectrumvalue = (sbyte[][])arrays[4];
-			//var scaletoresolutioncurve = (byte[])arrays[5];
-			//var athcurve = (byte[])arrays[6];
-			//var mdctwindow = (double[])arrays[7];
-			//var defaultchannelmapping = (byte[])arrays[8];
-			//var validchannelmappings = (byte[][])arrays[9];
-			/*for (var i = 0; i < arrays.Length; i++)
+			var arrays = ArrayUnpacker.UnpackArrays(ArrayUnpacker.PackedTables);
+			var quantizespectrumbits = (byte[][])arrays[0];
+			var quantizespectrumvalue = (byte[][])arrays[1];
+			var quantizedspectrumbits = (byte[][])arrays[2];
+			var quantizedspectrummaxbits = (byte[])arrays[3];
+			var quantizedspectrumvalue = (sbyte[][])arrays[4];
+			var scaletoresolutioncurve = (byte[])arrays[5];
+			var athcurve = (byte[])arrays[6];
+			var mdctwindow = (double[])arrays[7];
+			var defaultchannelmapping = (byte[])arrays[8];
+			var validchannelmappings = (byte[][])arrays[9];
+			for (var i = 0; i < arrays.Length; i++)
 			{
 				var builder = new StringBuilder();
 				builder.Append("[");
@@ -130,7 +130,8 @@ namespace CRIAudio.CLI
 							builder.Append($"{n},");
 						}
 						builder.Append("],");
-					} else if(v.GetType() == typeof(sbyte[]))
+					}
+					else if (v.GetType() == typeof(sbyte[]))
 					{
 						builder.Append("[");
 						foreach (var n in (sbyte[])v)
@@ -138,13 +139,16 @@ namespace CRIAudio.CLI
 							builder.Append($"{n},");
 						}
 						builder.Append("],");
-					} else { 
+					}
+					else
+					{
 						builder.Append($"{v},");
 					}
 				}
 				builder.Append("]");
 				Console.WriteLine($"{i}:{builder.ToString()}");
-			}*/
+			}
 		}
-    }
+
+	}
 }

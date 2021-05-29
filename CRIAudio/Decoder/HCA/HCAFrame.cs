@@ -106,11 +106,22 @@ namespace CRIAudio.Decoder.HCA
 				channel.UnpackIntensity(reader, info.HfrGroupCount, info.Version);
 
 				channel.CalculateResolution(packedNoiseLevel, athCurve, info.MinResolution, info.MaxResolution);
+				channel.CalculateGain();
 
-				Console.WriteLine("ScaleFactors:" + channel.ScaleFactors.ToString(toStr: (n) => { return string.Format("{0,0:X2}",n);}));
-				Console.WriteLine("Intensity   :" + channel.Intensity.ToString(toStr: (n) => { return string.Format("{0,0:X2}", n); }));
+				//Console.WriteLine("ScaleFactors:" + channel.ScaleFactors.ToString(toStr: (n) => { return string.Format("{0,0:X2}",n);}));
+				//Console.WriteLine("Intensity   :" + channel.Intensity.ToString(toStr: (n) => { return string.Format("{0,0:X2}", n); }));
+				//Console.WriteLine("Resolution  :" + channel.Resolution.ToString(toStr: (n) => { return string.Format("{0,0:X2}", n); }));
+				Console.WriteLine("Gain        :" + channel.Gain.ToString<double>());
 			}
 
+			for (var i = 0; i < SamplesPerFrame; i++)
+			{
+				foreach (var channel in channels)
+				{
+					channel.DequantizeCoefficient(reader);
+					Console.WriteLine("Spectra     :" + channel.Spectra.ToString<double>());
+				}
+			}
 			return true;
 		}
 	}

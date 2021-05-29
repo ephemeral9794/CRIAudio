@@ -30,6 +30,9 @@ namespace CRIAudio.Decoder.HCA
 		public int NoiseCount { get; private set; }
 		public int ValidCount { get; private set; }
 
+		public double[] Gain { get; private set; } = new double[SamplesPerSubFrame].FillArray(0.0);
+		public double[] Spectra { get; private set; } = new double[SamplesPerSubFrame].FillArray(0.0);
+
 		public bool UnpackScaleFactors(BitReader reader, uint hfrGroupCount, uint version) {
 			uint count = CodedCount;
 			uint excount = 0;
@@ -171,6 +174,8 @@ namespace CRIAudio.Decoder.HCA
 		public void CalculateResolution(int packedNoiseLevel, byte[] athCurve, uint minResolution, uint maxResolution)
 		{
 			var count = CodedCount;
+			var noiseCount = 0;
+			var validCount = 0;
 			for (var i = 0; i < count; i++)
 			{
 				int newResolution = 0;
@@ -194,7 +199,69 @@ namespace CRIAudio.Decoder.HCA
 				{
 					newResolution = 0;
 				}
+
+				/* added in v3.0 (before, min_resolution was always 1) */
+				if (newResolution > maxResolution)
+					newResolution = (int)maxResolution;
+				else if (newResolution < minResolution)
+					newResolution = (int)minResolution;
+
+				/* save resolution 0 (not encoded) indexes (from 0..N), and regular indexes (from N..0) */
+				if (newResolution < 1)
+				{
+					Noises[noiseCount] = (uint)i;
+					noiseCount++;
+				}
+				else
+				{
+					Noises[SamplesPerSubFrame - 1 - validCount] = (uint)i;
+					validCount++;
+				}
+
+				Resolution[i] = newResolution;
 			}
+		}
+
+		public void CalculateGain()
+		{
+			uint count = CodedCount;
+
+			for (var i = 0; i < count; i++)
+			{
+				var scalefactor_scale = HCATable.ScalingTable[ScaleFactors[i]];
+				var resolution_scale = HCATable.RangeTable[Resolution[i]];
+				Gain[i] = scalefactor_scale * resolution_scale;
+			}
+		}
+
+		public void DequantizeCoefficient(BitReader reader)
+		{
+			var count = CodedCount;
+
+			for (var i = 0; i < count; i++)
+			{
+				var resolution = Resolution[i];
+				int bits = HCATable.MaxBitTable[resolution];
+				var code = reader.CheckBit(bits);
+				double qc = 0.0;
+
+				if (resolution < 8)
+				{
+					int index = (resolution << 4) + code;
+					bits = HCATable.ReadBitTable[index];
+					qc = HCATable.ReadValueTable[index];
+				} else
+				{
+					/* parse values in sign-magnitude form (lowest bit = sign) */
+					var signed_code = (1 - ((code & 1) << 1)) * (code >> 1); /* move sign from low to up */
+					if (signed_code == 0)
+						bits -= 1;
+					qc = signed_code;
+				}
+				reader.AddBit(bits);
+				Spectra[i] = Gain[i] * qc;
+			}
+			Array.Clear(Spectra, (int)count, (int)(SamplesPerSubFrame - count));
 		}
 	}
 }
