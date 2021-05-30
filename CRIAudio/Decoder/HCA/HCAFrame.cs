@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,14 +58,16 @@ namespace CRIAudio.Decoder.HCA
 		}
 
 		HCAInfo info;
+		HCAData data;
 		HCAChannel[] channels;
 		byte[] athCurve;
 		int acceptableNoiseLevel;
 		int evaluationBoundary;
 
-		public HCAFrame(HCAInfo info)
+		public HCAFrame(HCAData data)
 		{
-			this.info = info;
+			this.info = data.Info;
+			this.data = data;
 			channels = new HCAChannel[info.ChannelCount];
 			var types = GetChannelTypes(info);
 
@@ -86,12 +89,115 @@ namespace CRIAudio.Decoder.HCA
 		{
 			var reader = new BitReader(bin);
 
-			UnpackFrame(reader);
+			//UnpackFrame(reader);
+			var sync = reader.GetInt16();
+			if (sync != 0xffff)
+			{
+				throw new InvalidDataException("");
+			}
 
-			output = new double[8,128];
+			acceptableNoiseLevel = reader.GetBit(9);
+			evaluationBoundary = reader.GetBit(7);
+			var packedNoiseLevel = (acceptableNoiseLevel << 8) - evaluationBoundary;
+
+			foreach (var channel in channels)
+			{
+				channel.UnpackScaleFactors(reader, info.HfrGroupCount, info.Version);
+				channel.UnpackIntensity(reader, info.HfrGroupCount, info.Version);
+
+				channel.CalculateResolution(packedNoiseLevel, athCurve, info.MinResolution, info.MaxResolution);
+				channel.CalculateGain();
+			}
+
+			for(var i = 0; i < channels.Length; i++) 
+			{
+				Log.WriteLine($"Channel #{i}");
+				Log.WriteLine("Type        :" + channels[i].Type);
+				Log.WriteLine("CodedCount  :" + channels[i].CodedCount);
+				Log.WriteLine("NoiseCount  :" + channels[i].NoiseCount);
+				Log.WriteLine("ValidCount  :" + channels[i].ValidCount);
+				Log.WriteLine("ScaleFactors:" + channels[i].ScaleFactors.ToString(toStr: (n) => { return string.Format("{0,0:X2}", n); }));
+				Log.WriteLine("Intensity   :" + channels[i].Intensity.ToString(toStr: (n) => { return string.Format("{0,0:X2}", n); }));
+				Log.WriteLine("Resolution  :" + channels[i].Resolution.ToString(toStr: (n) => { return string.Format("{0,0:X2}", n); }));
+				Log.WriteLine("Noises      :" + channels[i].Noises.ToString<uint>());
+				Log.WriteLine("Gain        :" + channels[i].Gain.ToString<double>());
+			}
+
+			for (var i = 0; i < SamplesPerFrame; i++)
+			{
+				foreach (var channel in channels)
+				{
+					channel.DequantizeCoefficient(reader);
+				}
+
+				foreach (var channel in channels)
+				{
+					var random = data.Random;
+					channel.ReconstructNoise(info.MinResolution, info.MSStereo, ref random);
+					data.Random = random;
+					channel.ReconstructHighFrequency(info);
+				}
+
+				/* restore missing joint stereo bands */
+				if (info.StereoBandCount > 0)
+				{
+					for (var ch = 0; ch < channels.Length - 1; ch++)
+					{
+						ApplyIntensityStereo(ch, i);
+						ApplyMSStereo(ch);
+					}
+				}
+
+				for (var n = 0; n < channels.Length; n++)
+				{
+
+					Log.WriteLine($"Spectra#{i}({n}):" + channels[n].Spectra.ToString<double>());
+				}
+
+			}
+
+		   output = new double[8,128];
 		}
 
-		private bool UnpackFrame(BitReader reader) {
+		private void ApplyIntensityStereo(int ch, int subframe)
+		{
+			if (channels[ch].Type != StereoPrimary) 
+				return;
+
+			for (int sf = 0; sf < SubframesPerFrame; sf++)
+			{
+				double[] l = channels[ch].Spectra;
+				double[] r = channels[ch + 1].Spectra;
+				double ratioL = HCATable.IntensityRatioTable[channels[ch + 1].Intensity[sf]];
+				double ratioR = ratioL - 2.0;
+				for (uint b = info.BaseBandCount; b < info.TotalBandCount; b++)
+				{
+					r[b] = l[b] * ratioR;
+					l[b] *= ratioL;
+				}
+			}
+		}
+
+		private void ApplyMSStereo(int ch)
+		{
+			if (info.MSStereo == 0) /* added in v3.0 */
+				return;
+			if (channels[ch].Type != StereoPrimary)
+				return;
+
+			const double ratio = 0.70710676908493; /* 0x3F3504F3 */
+			double[] sp_l = channels[ch].Spectra;
+			double[] sp_r = channels[ch + 1].Spectra;
+			for (uint band = info.BaseBandCount; band < info.TotalBandCount; band++)
+			{
+				double coef_l = (sp_l[band] + sp_r[band]) * ratio;
+				double coef_r = (sp_l[band] - sp_r[band]) * ratio;
+				sp_l[band] = coef_l;
+				sp_r[band] = coef_r;
+			}
+		}
+
+		/*private bool UnpackFrame(BitReader reader) {
 			var sync = reader.GetInt16();
 			if (sync != 0xffff) {
 				return false;
@@ -111,18 +217,15 @@ namespace CRIAudio.Decoder.HCA
 				//Console.WriteLine("ScaleFactors:" + channel.ScaleFactors.ToString(toStr: (n) => { return string.Format("{0,0:X2}",n);}));
 				//Console.WriteLine("Intensity   :" + channel.Intensity.ToString(toStr: (n) => { return string.Format("{0,0:X2}", n); }));
 				//Console.WriteLine("Resolution  :" + channel.Resolution.ToString(toStr: (n) => { return string.Format("{0,0:X2}", n); }));
-				Console.WriteLine("Gain        :" + channel.Gain.ToString<double>());
+				//Console.WriteLine("Gain        :" + channel.Gain.ToString<double>());
 			}
-
-			for (var i = 0; i < SamplesPerFrame; i++)
-			{
-				foreach (var channel in channels)
-				{
-					channel.DequantizeCoefficient(reader);
-					Console.WriteLine("Spectra     :" + channel.Spectra.ToString<double>());
-				}
-			}
+			
 			return true;
 		}
+
+		private void RestoreBands()
+		{
+			
+		}*/
 	}
 }

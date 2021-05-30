@@ -31,6 +31,7 @@ namespace CRIAudio.Decoder.HCA
 		public int ValidCount { get; private set; }
 
 		public double[] Gain { get; private set; } = new double[SamplesPerSubFrame].FillArray(0.0);
+		public double[] QuantizedSpectra { get; private set; } = new double[SamplesPerSubFrame].FillArray(0.0);
 		public double[] Spectra { get; private set; } = new double[SamplesPerSubFrame].FillArray(0.0);
 
 		public bool UnpackScaleFactors(BitReader reader, uint hfrGroupCount, uint version) {
@@ -174,8 +175,6 @@ namespace CRIAudio.Decoder.HCA
 		public void CalculateResolution(int packedNoiseLevel, byte[] athCurve, uint minResolution, uint maxResolution)
 		{
 			var count = CodedCount;
-			var noiseCount = 0;
-			var validCount = 0;
 			for (var i = 0; i < count; i++)
 			{
 				int newResolution = 0;
@@ -209,17 +208,19 @@ namespace CRIAudio.Decoder.HCA
 				/* save resolution 0 (not encoded) indexes (from 0..N), and regular indexes (from N..0) */
 				if (newResolution < 1)
 				{
-					Noises[noiseCount] = (uint)i;
-					noiseCount++;
+					Noises[NoiseCount] = (uint)i;
+					NoiseCount++;
 				}
 				else
 				{
-					Noises[SamplesPerSubFrame - 1 - validCount] = (uint)i;
-					validCount++;
+					Noises[SamplesPerSubFrame - 1 - ValidCount] = (uint)i;
+					ValidCount++;
 				}
 
 				Resolution[i] = newResolution;
 			}
+
+
 		}
 
 		public void CalculateGain()
@@ -247,21 +248,98 @@ namespace CRIAudio.Decoder.HCA
 
 				if (resolution < 8)
 				{
-					int index = (resolution << 4) + code;
-					bits = HCATable.ReadBitTable[index];
-					qc = HCATable.ReadValueTable[index];
-				} else
+					bits = HCATable.QuantizedSpectrumBits[resolution][code];
+					qc = HCATable.QuantizedSpectrumValue[resolution][code];
+				}
+				else
 				{
 					/* parse values in sign-magnitude form (lowest bit = sign) */
-					var signed_code = (1 - ((code & 1) << 1)) * (code >> 1); /* move sign from low to up */
-					if (signed_code == 0)
-						bits -= 1;
-					qc = signed_code;
+					int quantizedCoefficient = code / 2 * (1 - (code % 2 * 2));
+					if (quantizedCoefficient == 0)
+					{
+						bits--;
+					}
+					qc = quantizedCoefficient;
 				}
 				reader.AddBit(bits);
-				Spectra[i] = Gain[i] * qc;
+				Spectra[i] = qc * Gain[i];
 			}
 			Array.Clear(Spectra, (int)count, (int)(SamplesPerSubFrame - count));
 		}
+
+		public void ReconstructNoise(uint minResolution, uint msStereo, ref int random)
+		{
+			if (minResolution > 0) /* added in v3.0 */
+				return;
+			if (ValidCount <= 0 || NoiseCount <= 0)
+				return;
+			if (!(msStereo != 0 || Type == StereoPrimary))
+				return;
+
+			int rnd = random;
+			for (var i = 0; i < NoiseCount; i++)
+			{
+				random = 0x343FD * random + 0x269EC3; /* typical rand() */
+
+				/* can't go over 128 */
+				var random_index = SamplesPerSubFrame - ValidCount + (((random & 0x7FFF) * ValidCount) >> 15); 
+
+				/* points to next resolution 0 index and random non-resolution 0 index */
+				var noise_index = Noises[i];
+				var valid_index = Noises[random_index];
+
+				/* get final scale index */
+				var sf_noise = ScaleFactors[noise_index];
+				var sf_valid = ScaleFactors[valid_index];
+				var sc_index = (sf_noise - sf_valid + 62) & ~((sf_noise - sf_valid + 62) >> 31);
+
+				Spectra[noise_index] = HCATable.ScaleConversionTable[sc_index] * Spectra[valid_index];
+			}
+		}
+
+		public void ReconstructHighFrequency(HCAInfo info)
+		{
+			if (info.BandsPerHfrGroup == 0) /* added in v2.0, skipped in v2.0 files with 0 bands too */
+				return;
+			if (Type == StereoSecondary)
+				return;
+
+			uint group_limit;
+			uint start_band = info.StereoBandCount + info.BaseBandCount;
+			uint highband = start_band;
+			uint lowband = start_band - 1;
+			
+			if (info.Version <= VersionV200)
+			{
+				group_limit = info.HfrGroupCount;
+			}
+			else
+			{
+				group_limit = (info.HfrGroupCount >= 0) ? info.HfrGroupCount : info.HfrGroupCount + 1;
+				group_limit = group_limit >> 1;
+			}
+
+			for (var group = 0; group < info.HfrGroupCount; group++)
+			{
+				uint lowband_sub = (group < group_limit) ? 1 : 0; // move lowband towards 0 until group reachs limit 
+				for (var i = 0; i < info.BandsPerHfrGroup; i++)
+				{
+					if (highband >= info.TotalBandCount || lowband < 0)
+						break;
+
+					var sc_index = HfrScale[group] - ScaleFactors[lowband] + 63;
+					sc_index = sc_index & ~(sc_index >> 31); // clamped in v3.0 lib (in theory 6b sf are 0..128)
+
+					Spectra[highband] = HCATable.ScaleConversionTable[sc_index] * Spectra[lowband];
+
+					highband += 1;
+					lowband -= lowband_sub;
+				}
+			}
+
+			// last spectrum coefficient is 0 (normally highband = 128, but perhaps could 'break' before) 
+			Spectra[highband - 1] = 0.0f;
+		}
+
 	}
 }

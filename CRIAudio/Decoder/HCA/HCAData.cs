@@ -92,6 +92,7 @@ namespace CRIAudio.Decoder.HCA
 			if (!hasRvaChunk)
 				info.Volume = 1.0f;
 
+			data.Random = 1;
 			data.Info = info;
 
 			if (key == null)
@@ -213,13 +214,14 @@ namespace CRIAudio.Decoder.HCA
 		public HCAInfo Info { get; set; } = new HCAInfo();
         public HCAKey Key { get; set; }
         public byte[][] AudioData { get; set; }
+		public int Random { get; set; }
 
         private HCAData() { }
 
 		public void Decode()
 		{
 			var waves = new List<double>();
-			var frame = new HCAFrame(Info);
+			var frame = new HCAFrame(this);
 
             for (int i = 0; i < Info.FrameCount; i++)
             {

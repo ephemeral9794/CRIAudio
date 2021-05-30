@@ -76,6 +76,26 @@ namespace CRIAudio.Decoder.HCA
             3,3,3,3,3,3,4,4, 4,4,4,4,4,4,4,4,
             3,3,4,4,4,4,4,4, 4,4,4,4,4,4,4,4,
         };
+        public static byte[][] QuantizedSpectrumBits = {
+            new byte[] { 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, },
+            new byte[] { 1,1,2,2,0,0,0,0, 0,0,0,0,0,0,0,0, },
+            new byte[] { 2,2,2,2,2,2,3,3, 0,0,0,0,0,0,0,0, },
+            new byte[] { 2,2,3,3,3,3,3,3, 0,0,0,0,0,0,0,0, },
+            new byte[] { 3,3,3,3,3,3,3,3, 3,3,3,3,3,3,4,4, },
+            new byte[] { 3,3,3,3,3,3,3,3, 3,3,4,4,4,4,4,4, },
+            new byte[] { 3,3,3,3,3,3,4,4, 4,4,4,4,4,4,4,4, },
+            new byte[] { 3,3,4,4,4,4,4,4, 4,4,4,4,4,4,4,4, }
+        };
+        public static sbyte[][] QuantizedSpectrumValue = {
+            new sbyte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
+            new sbyte[] {0, 0, 1,-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
+            new sbyte[] {0, 0, 1, 1,-1,-1, 2,-2, 0, 0, 0, 0, 0, 0, 0, 0,},
+            new sbyte[] {0, 0, 1,-1, 2,-2, 3,-3, 0, 0, 0, 0, 0, 0, 0, 0,},
+            new sbyte[] {0, 0, 1, 1,-1,-1, 2, 2,-2,-2, 3, 3,-3,-3, 4,-4,},
+            new sbyte[] {0, 0, 1, 1,-1,-1, 2, 2,-2,-2, 3,-3, 4,-4, 5,-5,},
+            new sbyte[] {0, 0, 1, 1,-1,-1, 2,-2, 3,-3, 4,-4, 5,-5, 6,-6,},
+            new sbyte[] {0, 0, 1,-1, 2,-2, 3,-3, 4,-4, 5,-5, 6,-6, 7,-7,},
+        };
         public static double[] ReadValueTable = {
             +0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0, +0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0,
             +0.0,+0.0,+1.0,-1.0,+0.0,+0.0,+0.0,+0.0, +0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0,
@@ -86,19 +106,31 @@ namespace CRIAudio.Decoder.HCA
             +0.0,+0.0,+1.0,+1.0,-1.0,-1.0,+2.0,-2.0, +3.0,-3.0,+4.0,-4.0,+5.0,-5.0,+6.0,-6.0,
             +0.0,+0.0,+1.0,-1.0,+2.0,-2.0,+3.0,-3.0, +4.0,-4.0,+5.0,-5.0,+6.0,-6.0,+7.0,-7.0,
         };
-
+        public static double[] ScaleConversionTable;
+        public static double[] IntensityRatioTable;
 
         static HCATable()
 		{
-            ScalingTable = GenerateArray(64, DequantizerScalingFunction);
-            RangeTable = GenerateArray(16, QuantizerStepSizeFunction);
+            ScalingTable = new double[64].Generate(DequantizerScalingFunction);
+            RangeTable = new double[16].Generate(QuantizerStepSizeFunction);
+            ScaleConversionTable = new double[128].Generate(ScaleConversionTableFunction);
+            IntensityRatioTable = new double[15].Generate(IntensityRatioFunction);
         }
-
         private static double DequantizerScalingFunction(int x) => Math.Sqrt(128) * Math.Pow(Math.Pow(2, 53.0 / 128), x - 63);
         private static double QuantizerStepSizeFunction(int x) => x == 0 ? 0 : 1 / (((x < 8) ? x : (1 << (x - 4)) - 1) + 0.5);
+        private static double ScaleConversionTableFunction(int x) => x > 1 && x < 127 ? Math.Pow(Math.Pow(2, 53.0 / 128), x - 64) : 0;
+        private static double IntensityRatioFunction(int x) => (28 - x * 2) / 14.0;
         private static T[] GenerateArray<T>(int length, Func<int, T> func)
 		{
             var array = new T[length];
+            for (var i = 0; i < array.Length; i++)
+			{
+                array[i] = func(i);
+			}
+            return array;
+		}
+        private static T[] Generate<T>(this T[] array, Func<int, T> func)
+		{
             for (var i = 0; i < array.Length; i++)
 			{
                 array[i] = func(i);
