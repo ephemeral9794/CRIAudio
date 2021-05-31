@@ -85,10 +85,10 @@ namespace CRIAudio.Decoder.HCA
 			athCurve = info.UseAthTable ? ScaleAthCurve((int)info.SampleRate) : new byte[SamplesPerSubFrame].FillArray<byte>(0);
 		}
 
-		public void DecodeFrame(byte[] bin, out double[,] output)
+		public void DecodeFrame(byte[] bin, out double[][] output)
 		{
 			var reader = new BitReader(bin);
-		    output = new double[8,128];
+		    output = new double[info.ChannelCount][].InitializeJaggedArray(SamplesPerFrame);
 
 			//UnpackFrame(reader);
 			var sync = reader.GetInt16();
@@ -124,7 +124,7 @@ namespace CRIAudio.Decoder.HCA
 				Log.WriteLine("Gain        :" + channels[i].Gain.ToString<double>());
 			}
 
-			for (var i = 0; i < SamplesPerFrame; i++)
+			for (var i = 0; i < SubframesPerFrame; i++)
 			{
 				foreach (var channel in channels)
 				{
@@ -159,7 +159,18 @@ namespace CRIAudio.Decoder.HCA
 					//Log.WriteLine($"Wave#{i}({n})   :" + channels[n].Wave.ToString<double>());
 				}
 			}
-			
+
+			for (int c = 0; c < channels.Length; c++)
+			{
+				for (int sf = 0; sf < SubframesPerFrame; sf++)
+				{
+					for (int s = 0; s < SamplesPerSubFrame; s++)
+					{
+						double sample = channels[c].Wave[sf, s];
+						output[c][sf * SamplesPerSubFrame + s] = sample;
+					}
+				}
+			}
 		}
 
 		private void ApplyIntensityStereo(int ch, int subframe)

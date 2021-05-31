@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using CRIAudio.Utility;
+using static CRIAudio.Decoder.HCA.HCAConstants;
+using static CRIAudio.Utility.Extension;
 
 namespace CRIAudio.Decoder.HCA
 {
@@ -137,7 +139,7 @@ namespace CRIAudio.Decoder.HCA
 			info.FrameCount = reader.ReadUInt32();
 			info.MuteHeader = reader.ReadUInt16();
 			info.MuteFooter = reader.ReadUInt16();
-			info.SampleCount = info.FrameCount * 1024 - info.MuteHeader - info.MuteFooter;
+			info.SampleCount = info.FrameCount * HCAConstants.SamplesPerFrame - info.MuteHeader - info.MuteFooter;
 		}
 		private static void ReadCompChunk(EndianBinaryReader reader, ref HCAInfo info)
 		{
@@ -215,12 +217,13 @@ namespace CRIAudio.Decoder.HCA
         public HCAKey Key { get; set; }
         public byte[][] AudioData { get; set; }
 		public int Random { get; set; }
+		public double[][] Waves { get; private set; }
 
         private HCAData() { }
 
 		public void Decode()
 		{
-			var waves = new List<double>();
+			Waves = new double[Info.ChannelCount][].InitializeJaggedArray((int)Info.SampleCount);
 			var frame = new HCAFrame(this);
 
             for (int i = 0; i < Info.FrameCount; i++)
@@ -228,8 +231,25 @@ namespace CRIAudio.Decoder.HCA
 				var audio = AudioData[i];
 				Key.Decrypt(audio);
 				Console.Write($"Frame#{i}:");
-                frame.DecodeFrame(audio, out double[,] output);
+                frame.DecodeFrame(audio, out double[][] output);
+				CopyWaveBuffer(Waves, output, i);
             }
+		}
+
+		private void CopyWaveBuffer(double[][] waves, double[][] input, int frame)
+		{
+			int currentSample = (int)(frame * SamplesPerFrame - Info.MuteHeader);
+			int remainingSamples = (int)Math.Min(Info.SampleCount - currentSample, Info.SampleCount);
+			int srcStart = Clamp(0 - currentSample, 0, SamplesPerFrame);
+			int destStart = Math.Max(currentSample, 0);
+
+			int length = Math.Min(SamplesPerFrame - srcStart, remainingSamples);
+			if (length <= 0) return;
+
+			for (int c = 0; c < waves.Length; c++)
+			{
+				Array.Copy(input[c], srcStart, waves[c], destStart, length);
+			}
 		}
     }
 }

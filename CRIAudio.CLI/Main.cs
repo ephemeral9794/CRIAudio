@@ -167,7 +167,15 @@ namespace CRIAudio.CLI
 				0xDF, 0x8F, 0xFC, 0xCE, 0x7B, 0xF0, 0xFF, 0x79, 0xD6, 0xDF, 0x9F, 0x7F, 0x7F, 0xE0, 0x60, 0x76,
 			};
 			var frame = new HCAFrame(hca);
-			frame.DecodeFrame(data, out double[,] output);
+			frame.DecodeFrame(data, out double[][] output);
+
+			Log.WriteLine();
+			Log.WriteLine("{");
+			foreach (var o in output)
+			{
+				Log.WriteLine(o.ToString<double>());
+			}
+			Log.WriteLine("}");
 
 			//hca.Decode();
 

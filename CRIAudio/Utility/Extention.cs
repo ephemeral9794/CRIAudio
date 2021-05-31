@@ -103,6 +103,22 @@ namespace CRIAudio.Utility
 				return Encoding.GetEncoding("ASCII").GetString(BitConverter.GetBytes(n));
 			}
 		}
+		public static T[][] InitializeJaggedArray<T>(this T[][] array, int length)
+		{
+			for (var i = 0; i < array.Length; i++)
+			{
+				array[i] = new T[length];
+			}
+			return array;
+		}
+		public static int Clamp(int value, int min, int max)
+		{
+			if (value < min)
+				return min;
+			if (value > max)
+				return max;
+			return value;
+		}
 
 		// List.ToString Extention
 		// http://kamiya.hatenadiary.jp/entry/2014/03/11/023140

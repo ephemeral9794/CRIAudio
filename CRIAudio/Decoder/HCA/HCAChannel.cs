@@ -21,8 +21,8 @@ namespace CRIAudio.Decoder.HCA
 		public ChannelType Type { get; set; }
 		public uint CodedCount { get; set; } 
 		public uint[] ScaleFactors { get; private set; } = new uint[SamplesPerSubFrame].FillArray(0U);
-		public uint[] Intensity { get; private set; } = new uint[SamplesPerFrame].FillArray(0U);
-		public uint[] HfrScale { get; private set; } = new uint[SamplesPerFrame].FillArray(0U);
+		public uint[] Intensity { get; private set; } = new uint[SubframesPerFrame].FillArray(0U);
+		public uint[] HfrScale { get; private set; } = new uint[SubframesPerFrame].FillArray(0U);
 
 		public int[] Resolution { get; private set; } = new int[SamplesPerSubFrame].FillArray(0);
 		public uint[] Noises { get; private set; } = new uint[SamplesPerSubFrame].FillArray(0U);
@@ -35,7 +35,7 @@ namespace CRIAudio.Decoder.HCA
 		public double[] Spectra { get; private set; } = new double[SamplesPerSubFrame].FillArray(0.0);
 
 		public MDCT MDCT{ get; } = new MDCT(SubFrameSamplesBits, HCATable.MDCTWindow, Math.Sqrt(2.0 / SamplesPerSubFrame));
-		public double[,] Wave { get; private set; } = new double[SamplesPerFrame, SamplesPerSubFrame];
+		public double[,] Wave { get; private set; } = new double[SubframesPerFrame, SamplesPerSubFrame];
 
 		public bool UnpackScaleFactors(BitReader reader, uint hfrGroupCount, uint version) {
 			uint count = CodedCount;
