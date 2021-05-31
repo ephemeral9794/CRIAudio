@@ -88,6 +88,7 @@ namespace CRIAudio.Decoder.HCA
 		public void DecodeFrame(byte[] bin, out double[,] output)
 		{
 			var reader = new BitReader(bin);
+		    output = new double[8,128];
 
 			//UnpackFrame(reader);
 			var sync = reader.GetInt16();
@@ -148,15 +149,17 @@ namespace CRIAudio.Decoder.HCA
 					}
 				}
 
-				for (var n = 0; n < channels.Length; n++)
-				{
-
-					Log.WriteLine($"Spectra#{i}({n}):" + channels[n].Spectra.ToString<double>());
+				foreach (var channel in channels) {
+					channel.RunIMDCT(i);
 				}
 
+				for (var n = 0; n < channels.Length; n++)
+				{
+					Log.WriteLine($"Spectra#{i}({n}):" + channels[n].Spectra.ToString<double>());
+					//Log.WriteLine($"Wave#{i}({n})   :" + channels[n].Wave.ToString<double>());
+				}
 			}
-
-		   output = new double[8,128];
+			
 		}
 
 		private void ApplyIntensityStereo(int ch, int subframe)

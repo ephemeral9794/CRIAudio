@@ -34,6 +34,9 @@ namespace CRIAudio.Decoder.HCA
 		public double[] QuantizedSpectra { get; private set; } = new double[SamplesPerSubFrame].FillArray(0.0);
 		public double[] Spectra { get; private set; } = new double[SamplesPerSubFrame].FillArray(0.0);
 
+		public MDCT MDCT{ get; } = new MDCT(SubFrameSamplesBits, HCATable.MDCTWindow, Math.Sqrt(2.0 / SamplesPerSubFrame));
+		public double[,] Wave { get; private set; } = new double[SamplesPerFrame, SamplesPerSubFrame];
+
 		public bool UnpackScaleFactors(BitReader reader, uint hfrGroupCount, uint version) {
 			uint count = CodedCount;
 			uint excount = 0;
@@ -219,8 +222,6 @@ namespace CRIAudio.Decoder.HCA
 
 				Resolution[i] = newResolution;
 			}
-
-
 		}
 
 		public void CalculateGain()
@@ -321,7 +322,7 @@ namespace CRIAudio.Decoder.HCA
 
 			for (var group = 0; group < info.HfrGroupCount; group++)
 			{
-				uint lowband_sub = (group < group_limit) ? 1 : 0; // move lowband towards 0 until group reachs limit 
+				uint lowband_sub = (group < group_limit) ? 1U : 0U; // move lowband towards 0 until group reachs limit 
 				for (var i = 0; i < info.BandsPerHfrGroup; i++)
 				{
 					if (highband >= info.TotalBandCount || lowband < 0)
@@ -341,5 +342,12 @@ namespace CRIAudio.Decoder.HCA
 			Spectra[highband - 1] = 0.0f;
 		}
 
+		public void RunIMDCT(int subframe) {
+			double[] output = new double[Spectra.Length];
+			MDCT.RunIMDCT(Spectra, output);
+			for (var i = 0; i < output.Length; i++) {
+				Wave[subframe, i] = output[i];
+			}
+		}
 	}
 }

@@ -10,7 +10,7 @@ namespace CRIAudio.Decoder.HCA
 {
 	public static class HCATable
 	{
-        public static byte[] AthTable = {
+        public readonly static byte[] AthTable = {
             0x78,0x5F,0x56,0x51,0x4E,0x4C,0x4B,0x49,0x48,0x48,0x47,0x46,0x46,0x45,0x45,0x45,
             0x44,0x44,0x44,0x44,0x43,0x43,0x43,0x43,0x43,0x43,0x42,0x42,0x42,0x42,0x42,0x42,
             0x42,0x42,0x41,0x41,0x41,0x41,0x41,0x41,0x41,0x41,0x41,0x41,0x40,0x40,0x40,0x40,
@@ -54,19 +54,19 @@ namespace CRIAudio.Decoder.HCA
             0xEF,0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFF,0xFF,
         };
 
-        public static byte[] ScaleInvertTable = {
+        public readonly static byte[] ScaleInvertTable = {
             14,14,14,14,14,14,13,13, 13,13,13,13,12,12,12,12,
             12,12,11,11,11,11,11,11, 10,10,10,10,10,10,10, 9,
              9, 9, 9, 9, 9, 8, 8, 8,  8, 8, 8, 7, 6, 6, 5, 4,
              4, 4, 3, 3, 3, 2, 2, 2,  2, 1, 1, 1, 1, 1, 1, 1,
              1, 1,
         };
-        public static double[] ScalingTable;
-        public static double[] RangeTable;
-        public static byte[] MaxBitTable = {
+        public readonly static double[] ScalingTable;
+        public readonly static double[] RangeTable;
+        public readonly static byte[] MaxBitTable = {
             0,2,3,3,4,4,4,4, 5,6,7,8,9,10,11,12
         };
-        public static byte[] ReadBitTable = {
+        public readonly static byte[] ReadBitTable = {
             0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
             1,1,2,2,0,0,0,0, 0,0,0,0,0,0,0,0,
             2,2,2,2,2,2,3,3, 0,0,0,0,0,0,0,0,
@@ -76,7 +76,7 @@ namespace CRIAudio.Decoder.HCA
             3,3,3,3,3,3,4,4, 4,4,4,4,4,4,4,4,
             3,3,4,4,4,4,4,4, 4,4,4,4,4,4,4,4,
         };
-        public static byte[][] QuantizedSpectrumBits = {
+        public readonly static byte[][] QuantizedSpectrumBits = {
             new byte[] { 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, },
             new byte[] { 1,1,2,2,0,0,0,0, 0,0,0,0,0,0,0,0, },
             new byte[] { 2,2,2,2,2,2,3,3, 0,0,0,0,0,0,0,0, },
@@ -86,7 +86,7 @@ namespace CRIAudio.Decoder.HCA
             new byte[] { 3,3,3,3,3,3,4,4, 4,4,4,4,4,4,4,4, },
             new byte[] { 3,3,4,4,4,4,4,4, 4,4,4,4,4,4,4,4, }
         };
-        public static sbyte[][] QuantizedSpectrumValue = {
+        public readonly static sbyte[][] QuantizedSpectrumValue = {
             new sbyte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
             new sbyte[] {0, 0, 1,-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
             new sbyte[] {0, 0, 1, 1,-1,-1, 2,-2, 0, 0, 0, 0, 0, 0, 0, 0,},
@@ -96,7 +96,7 @@ namespace CRIAudio.Decoder.HCA
             new sbyte[] {0, 0, 1, 1,-1,-1, 2,-2, 3,-3, 4,-4, 5,-5, 6,-6,},
             new sbyte[] {0, 0, 1,-1, 2,-2, 3,-3, 4,-4, 5,-5, 6,-6, 7,-7,},
         };
-        public static double[] ReadValueTable = {
+        public readonly static double[] ReadValueTable = {
             +0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0, +0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0,
             +0.0,+0.0,+1.0,-1.0,+0.0,+0.0,+0.0,+0.0, +0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0,
             +0.0,+0.0,+1.0,+1.0,-1.0,-1.0,+2.0,-2.0, +0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0,+0.0,
@@ -106,8 +106,27 @@ namespace CRIAudio.Decoder.HCA
             +0.0,+0.0,+1.0,+1.0,-1.0,-1.0,+2.0,-2.0, +3.0,-3.0,+4.0,-4.0,+5.0,-5.0,+6.0,-6.0,
             +0.0,+0.0,+1.0,-1.0,+2.0,-2.0,+3.0,-3.0, +4.0,-4.0,+5.0,-5.0,+6.0,-6.0,+7.0,-7.0,
         };
-        public static double[] ScaleConversionTable;
-        public static double[] IntensityRatioTable;
+        public readonly static double[] ScaleConversionTable;
+        public readonly static double[] IntensityRatioTable;
+        private readonly static ulong[] MDCTWindow_Hex = {
+            0x3F46A09E00000000, 0x3F60307700000000, 0x3F6E18A700000000, 0x3F77724D00000000, 0x3F80950120000000, 0x3F86104000000000, 0x3F8C250980000000, 0x3F9167E2E0000000, 
+            0x3F95073240000000, 0x3F98EFF7A0000000, 0x3F9D222200000000, 0x3FA0CEF9A0000000, 0x3FA331F880000000, 0x3FA5BA6B80000000, 0x3FA868C860000000, 0x3FAB3D9820000000, 
+            0x3FAE397500000000, 0x3FB0AE83C0000000, 0x3FB2548260000000, 0x3FB40F1680000000, 0x3FB5DEA440000000, 0x3FB7C393C0000000, 0x3FB9BE4F60000000, 0x3FBBCF43A0000000, 
+            0x3FBDF6DDA0000000, 0x3FC01AC560000000, 0x3FC145DB40000000, 0x3FC27CE540000000, 0x3FC3C01620000000, 0x3FC50F9E40000000, 0x3FC66BAAA0000000, 0x3FC7D46420000000, 
+            0x3FC949EEA0000000, 0x3FCACC67E0000000, 0x3FCC5BE6E0000000, 0x3FCDF87A20000000, 0x3FCFA22700000000, 0x3FD0AC7440000000, 0x3FD18E56E0000000, 0x3FD276AC20000000, 
+            0x3FD3655DE0000000, 0x3FD45A4DE0000000, 0x3FD5555560000000, 0x3FD6564440000000, 0x3FD75CE0C0000000, 0x3FD868E6E0000000, 0x3FD97A07A0000000, 0x3FDA8FE8C0000000, 
+            0x3FDBAA2500000000, 0x3FDCC84B80000000, 0x3FDDE9DFE0000000, 0x3FDF0E5AE0000000, 0x3FE01A9520000000, 0x3FE0AED940000000, 0x3FE143A760000000, 0x3FE1D8A900000000, 
+            0x3FE26D84A0000000, 0x3FE301DE40000000, 0x3FE3955840000000, 0x3FE4279440000000, 0x3FE4B834A0000000, 0x3FE546DCE0000000, 0x3FE5D33300000000, 0x3FE65CE0A0000000, 
+            0x3FE6E393C0000000, 0x3FE766FFC0000000, 0x3FE7E6DE40000000, 0x3FE862F000000000, 0x3FE8DAFCC0000000, 0x3FE94ED480000000, 0x3FE9BE4F80000000, 0x3FEA294DE0000000, 
+            0x3FEA8FB8A0000000, 0x3FEAF18060000000, 0x3FEB4E9DC0000000, 0x3FEBA710E0000000, 0x3FEBFAE0E0000000, 0x3FEC4A1B40000000, 0x3FEC94D320000000, 0x3FECDB2100000000, 
+            0x3FED1D21C0000000, 0x3FED5AF620000000, 0x3FED94C220000000, 0x3FEDCAAC40000000, 0x3FEDFCDCE0000000, 0x3FEE2B7DE0000000, 0x3FEE56BA20000000, 0x3FEE7EBCC0000000, 
+            0x3FEEA3B120000000, 0x3FEEC5C260000000, 0x3FEEE51AE0000000, 0x3FEF01E400000000, 0x3FEF1C4680000000, 0x3FEF346980000000, 0x3FEF4A72E0000000, 0x3FEF5E8720000000, 
+            0x3FEF70C900000000, 0x3FEF8159C0000000, 0x3FEF905900000000, 0x3FEF9DE4C0000000, 0x3FEFAA1960000000, 0x3FEFB511C0000000, 0x3FEFBEE6E0000000, 0x3FEFC7B0C0000000, 
+            0x3FEFCF8540000000, 0x3FEFD67980000000, 0x3FEFDCA0E0000000, 0x3FEFE20D80000000, 0x3FEFE6D060000000, 0x3FEFEAF940000000, 0x3FEFEE96C0000000, 0x3FEFF1B6C0000000, 
+            0x3FEFF465C0000000, 0x3FEFF6AF60000000, 0x3FEFF89EC0000000, 0x3FEFFA3DA0000000, 0x3FEFFB95A0000000, 0x3FEFFCAF20000000, 0x3FEFFD9200000000, 0x3FEFFE45C0000000, 
+            0x3FEFFED100000000, 0x3FEFFF3A00000000, 0x3FEFFF8640000000, 0x3FEFFFBB40000000, 0x3FEFFFDDA0000000, 0x3FEFFFF1E0000000, 0x3FEFFFFBE0000000, 0x3FEFFFFF80000000, 
+        };
+        public readonly static double[] MDCTWindow;
 
         static HCATable()
 		{
@@ -115,11 +134,13 @@ namespace CRIAudio.Decoder.HCA
             RangeTable = new double[16].Generate(QuantizerStepSizeFunction);
             ScaleConversionTable = new double[128].Generate(ScaleConversionTableFunction);
             IntensityRatioTable = new double[15].Generate(IntensityRatioFunction);
+            MDCTWindow = new double[MDCTWindow_Hex.Length].Generate(MDCTWindowConvertFunction);
         }
         private static double DequantizerScalingFunction(int x) => Math.Sqrt(128) * Math.Pow(Math.Pow(2, 53.0 / 128), x - 63);
         private static double QuantizerStepSizeFunction(int x) => x == 0 ? 0 : 1 / (((x < 8) ? x : (1 << (x - 4)) - 1) + 0.5);
         private static double ScaleConversionTableFunction(int x) => x > 1 && x < 127 ? Math.Pow(Math.Pow(2, 53.0 / 128), x - 64) : 0;
         private static double IntensityRatioFunction(int x) => (28 - x * 2) / 14.0;
+        private static double MDCTWindowConvertFunction(int x) => BitConverter.ToDouble(BitConverter.GetBytes(MDCTWindow_Hex[x]));
         private static T[] GenerateArray<T>(int length, Func<int, T> func)
 		{
             var array = new T[length];

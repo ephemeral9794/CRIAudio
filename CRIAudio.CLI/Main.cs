@@ -171,18 +171,19 @@ namespace CRIAudio.CLI
 
 			//hca.Decode();
 
-			/*var arrays = ArrayUnpacker.UnpackArrays(ArrayUnpacker.PackedTables);
-			var quantizespectrumbits = (byte[][])arrays[0];
-			var quantizespectrumvalue = (byte[][])arrays[1];
-			var quantizedspectrumbits = (byte[][])arrays[2];
-			var quantizedspectrummaxbits = (byte[])arrays[3];
-			var quantizedspectrumvalue = (sbyte[][])arrays[4];
-			var scaletoresolutioncurve = (byte[])arrays[5];
-			var athcurve = (byte[])arrays[6];
-			var mdctwindow = (double[])arrays[7];
-			var defaultchannelmapping = (byte[])arrays[8];
-			var validchannelmappings = (byte[][])arrays[9];
-			for (var i = 0; i < arrays.Length; i++)
+			//var arrays = ArrayUnpacker.UnpackArrays(ArrayUnpacker.PackedTables);
+			//var quantizespectrumbits = (byte[][])arrays[0];
+			//var quantizespectrumvalue = (byte[][])arrays[1];
+			//var quantizedspectrumbits = (byte[][])arrays[2];
+			//var quantizedspectrummaxbits = (byte[])arrays[3];
+			//var quantizedspectrumvalue = (sbyte[][])arrays[4];
+			//var scaletoresolutioncurve = (byte[])arrays[5];
+			//var athcurve = (byte[])arrays[6];
+			//var mdctwindow = (double[])arrays[7];
+			//var defaultchannelmapping = (byte[])arrays[8];
+			//var validchannelmappings = (byte[][])arrays[9];
+
+			/*for (var i = 0; i < arrays.Length; i++)
 			{
 				var builder = new StringBuilder();
 				builder.Append("[");
