@@ -103,6 +103,8 @@ namespace CRIAudio.Utility
 				return Encoding.GetEncoding("ASCII").GetString(BitConverter.GetBytes(n));
 			}
 		}
+		public static byte[] GetBytes(this string s) => GetBytes(s, Encoding.ASCII);
+		public static byte[] GetBytes(this string s, Encoding encoding) => encoding.GetBytes(s);
 		public static T[][] InitializeJaggedArray<T>(this T[][] array, int length)
 		{
 			for (var i = 0; i < array.Length; i++)

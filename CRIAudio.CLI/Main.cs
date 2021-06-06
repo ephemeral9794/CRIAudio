@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using CRIAudio.Container.Wave;
 using CRIAudio.Decoder.HCA;
 using CRIAudio.Utility;
 
@@ -10,29 +11,31 @@ namespace CRIAudio.CLI
     {
         static void Main(string[] args)
         {
+			Log.Visible = true;
+
             string file = @"C:\Users\Administrator\Desktop\Develop\CRIWARE_ANALYZE\snd_bgm_live_1001_oke_01.hca";
             var bin = File.ReadAllBytes(file);
             var hca = HCAData.ReadData(bin, new HCAKey(0x0000450D608C479F, 0x5CDE));
 
 			var info = hca.Info;
-			Console.WriteLine($"HCA Data Ver.{string.Format("{0,0:X4}", info.Version)}");
-			Console.WriteLine($"Data Offset      : {string.Format("0x{0,0:X8}", info.DataOffset)}");
-			Console.WriteLine($"Channel Count    : {info.ChannelCount}");
-			Console.WriteLine($"Sample Rate      : {info.SampleRate}");
-			Console.WriteLine($"Frame Count      : {info.FrameCount}");
-			Console.WriteLine($"Frame Size       : {info.FrameSize}");
-			Console.WriteLine($"Min Resolution   : {info.MinResolution}");
-			Console.WriteLine($"Max Resolution   : {info.MaxResolution}");
-			Console.WriteLine($"Track Count      : {info.TrackCount}");
-			Console.WriteLine($"Channel Config   : {info.ChannelConfig}");
-			Console.WriteLine($"Total Band Count : {info.TotalBandCount}");
-			Console.WriteLine($"Base Band Count  : {info.BaseBandCount}");
-			Console.WriteLine($"Stereo Band Count: {info.StereoBandCount}");
-			Console.WriteLine($"Hfr Band Cound   : {info.HfrBandCount}");
-			Console.WriteLine($"Bands/HfrGroup   : {info.BandsPerHfrGroup}");
-			Console.WriteLine($"Hfr Group Count  : {info.HfrGroupCount}");
-			Console.WriteLine($"MS Stereo        : {info.MSStereo}");
-			Console.WriteLine();
+			Log.WriteLine($"HCA Data Ver.{string.Format("{0,0:X4}", info.Version)}");
+			Log.WriteLine($"Data Offset      : {string.Format("0x{0,0:X8}", info.DataOffset)}");
+			Log.WriteLine($"Channel Count    : {info.ChannelCount}");
+			Log.WriteLine($"Sample Rate      : {info.SampleRate}");
+			Log.WriteLine($"Frame Count      : {info.FrameCount}");
+			Log.WriteLine($"Frame Size       : {info.FrameSize}");
+			Log.WriteLine($"Min Resolution   : {info.MinResolution}");
+			Log.WriteLine($"Max Resolution   : {info.MaxResolution}");
+			Log.WriteLine($"Track Count      : {info.TrackCount}");
+			Log.WriteLine($"Channel Config   : {info.ChannelConfig}");
+			Log.WriteLine($"Total Band Count : {info.TotalBandCount}");
+			Log.WriteLine($"Base Band Count  : {info.BaseBandCount}");
+			Log.WriteLine($"Stereo Band Count: {info.StereoBandCount}");
+			Log.WriteLine($"Hfr Band Cound   : {info.HfrBandCount}");
+			Log.WriteLine($"Bands/HfrGroup   : {info.BandsPerHfrGroup}");
+			Log.WriteLine($"Hfr Group Count  : {info.HfrGroupCount}");
+			Log.WriteLine($"MS Stereo        : {info.MSStereo}");
+			Log.WriteLine();
 
 			/*byte[] data = {
 				0xFF, 0xFF, 0x60, 0x96, 0x12, 0x0B, 0xE5, 0x5D, 0x89, 0xDE, 0xB0, 0xA3, 0xAD, 0x65, 0xEC, 0x7C,
@@ -169,6 +172,7 @@ namespace CRIAudio.CLI
 			var frame = new HCAFrame(hca);
 			frame.DecodeFrame(data, out double[][] output);
 
+			Log.Visible = false;
 			Log.WriteLine();
 			Log.WriteLine("{");
 			foreach (var o in output)
@@ -177,7 +181,21 @@ namespace CRIAudio.CLI
 			}
 			Log.WriteLine("}");
 
-			//hca.Decode();
+			hca.Decode();
+
+			var wav = WaveWriter.ConvertToInt16(hca.Waves);
+
+			WaveInfo wavInfo = new WaveInfo { 
+				Format = WaveFormat.PCM,
+				SampleRate = hca.Info.SampleRate,
+				ChannelCount =  (ushort)hca.Info.ChannelCount,
+				BitsPerSample = 16
+			};
+			string outfile = @"output.wav";
+			using (var stream = new FileStream(outfile, FileMode.OpenOrCreate, FileAccess.Write))
+			{
+				WaveWriter.WriteData(new WaveData { Info = wavInfo, AudioData = wav }, stream);
+			}
 
 			//var arrays = ArrayUnpacker.UnpackArrays(ArrayUnpacker.PackedTables);
 			//var quantizespectrumbits = (byte[][])arrays[0];

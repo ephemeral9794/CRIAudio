@@ -26,6 +26,7 @@ namespace CRIAudio.Decoder.HCA
 
 		public int[] Resolution { get; private set; } = new int[SamplesPerSubFrame].FillArray(0);
 		public uint[] Noises { get; private set; } = new uint[SamplesPerSubFrame].FillArray(0U);
+		public uint[] Valids { get; private set; } = new uint[SamplesPerSubFrame].FillArray(0U);
 
 		public int NoiseCount { get; private set; }
 		public int ValidCount { get; private set; }
@@ -178,6 +179,8 @@ namespace CRIAudio.Decoder.HCA
 		public void CalculateResolution(int packedNoiseLevel, byte[] athCurve, uint minResolution, uint maxResolution)
 		{
 			var count = CodedCount;
+			int noise_count = 0;
+			int valid_count = 0;
 			for (var i = 0; i < count; i++)
 			{
 				int newResolution = 0;
@@ -212,16 +215,19 @@ namespace CRIAudio.Decoder.HCA
 				if (newResolution < 1)
 				{
 					Noises[NoiseCount] = (uint)i;
-					NoiseCount++;
+					noise_count++;
 				}
 				else
 				{
-					Noises[SamplesPerSubFrame - 1 - ValidCount] = (uint)i;
-					ValidCount++;
+					Noises[SamplesPerSubFrame - 1 - valid_count] = (uint)i;
+					valid_count++;
 				}
 
 				Resolution[i] = newResolution;
 			}
+
+			NoiseCount = noise_count;
+			ValidCount = valid_count;
 		}
 
 		public void CalculateGain()
