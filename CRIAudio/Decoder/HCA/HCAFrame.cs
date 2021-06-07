@@ -110,7 +110,7 @@ namespace CRIAudio.Decoder.HCA
 				channel.CalculateGain();
 			}
 
-			for(var i = 0; i < channels.Length; i++) 
+			/*for(var i = 0; i < channels.Length; i++) 
 			{
 				Log.WriteLine($"Channel #{i}");
 				Log.WriteLine("Type        :" + channels[i].Type);
@@ -122,7 +122,7 @@ namespace CRIAudio.Decoder.HCA
 				Log.WriteLine("Resolution  :" + channels[i].Resolution.ToString(toStr: (n) => { return string.Format("{0,0:X2}", n); }));
 				Log.WriteLine("Noises      :" + channels[i].Noises.ToString<uint>());
 				Log.WriteLine("Gain        :" + channels[i].Gain.ToString<double>());
-			}
+			}*/
 
 			for (var i = 0; i < SubframesPerFrame; i++)
 			{
@@ -153,11 +153,11 @@ namespace CRIAudio.Decoder.HCA
 					channel.RunIMDCT(i);
 				}
 
-				for (var n = 0; n < channels.Length; n++)
+				/*for (var n = 0; n < channels.Length; n++)
 				{
 					Log.WriteLine($"Spectra#{i}({n}):" + channels[n].Spectra.ToString<double>());
 					//Log.WriteLine($"Wave#{i}({n})   :" + channels[n].Wave.ToString<double>());
-				}
+				}*/
 			}
 
 			for (int c = 0; c < channels.Length; c++)
@@ -210,36 +210,5 @@ namespace CRIAudio.Decoder.HCA
 				sp_r[band] = coef_r;
 			}
 		}
-
-		/*private bool UnpackFrame(BitReader reader) {
-			var sync = reader.GetInt16();
-			if (sync != 0xffff) {
-				return false;
-			}
-
-			acceptableNoiseLevel = reader.GetBit(9);
-			evaluationBoundary = reader.GetBit(7);
-			var packedNoiseLevel = (acceptableNoiseLevel << 8) - evaluationBoundary;
-
-			foreach (var channel in channels) {
-				channel.UnpackScaleFactors(reader, info.HfrGroupCount, info.Version);
-				channel.UnpackIntensity(reader, info.HfrGroupCount, info.Version);
-
-				channel.CalculateResolution(packedNoiseLevel, athCurve, info.MinResolution, info.MaxResolution);
-				channel.CalculateGain();
-
-				//Console.WriteLine("ScaleFactors:" + channel.ScaleFactors.ToString(toStr: (n) => { return string.Format("{0,0:X2}",n);}));
-				//Console.WriteLine("Intensity   :" + channel.Intensity.ToString(toStr: (n) => { return string.Format("{0,0:X2}", n); }));
-				//Console.WriteLine("Resolution  :" + channel.Resolution.ToString(toStr: (n) => { return string.Format("{0,0:X2}", n); }));
-				//Console.WriteLine("Gain        :" + channel.Gain.ToString<double>());
-			}
-			
-			return true;
-		}
-
-		private void RestoreBands()
-		{
-			
-		}*/
 	}
 }

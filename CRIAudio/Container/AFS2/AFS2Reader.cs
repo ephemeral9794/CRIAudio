@@ -10,7 +10,7 @@ namespace CRIAudio.Container.AFS2 {
 
             reader.Order = Endian.BIG_ENDIAN;
             var signature = reader.ReadUInt32();
-            if (signature != 0x32534641) {
+            if (signature != 0x41465332) {
                 throw new InvalidDataException();
             }
 
