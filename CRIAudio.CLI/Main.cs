@@ -4,29 +4,37 @@ using System.Text;
 using CRIAudio.Container.Wave;
 using CRIAudio.Decoder.HCA;
 using CRIAudio.Utility;
+using CRIAudio.Container.AFS2;
 
 namespace CRIAudio.CLI
 {
-    class Program
-    {
-        static void Main(string[] args)
-        {
+	class Program
+	{
+		static void Main(string[] args)
+		{
 			Log.Visible = true;
+			string file = "";
+			if (args.Length != 1) {
+				//file = @"C:\Users\Administrator\Desktop\Develop\CRIWARE_ANALYZE\snd_bgm_live_1001_oke_01.awb";
+				file = @"C:\Users\147740\Desktop\Util\snd_bgm_live_1001_oke_01.awb";
+			} else {
+				file = args[0];
+			}
+			var bin = File.ReadAllBytes(file);
+			var afs2 = AFS2Reader.ReadData(bin);
 
-            string file = @"C:\Users\Administrator\Desktop\Develop\CRIWARE_ANALYZE\snd_bgm_live_1001_oke_01.hca";
-            var bin = File.ReadAllBytes(file);
-            var hca = HCAData.ReadData(bin, new HCAKey(0x0000450D608C479F, 0x5CDE));
+			var hca = HCAData.ReadData(afs2[0].Binary, new HCAKey(0x0000450D608C479F, afs2.Info.SubKey));
 
 			var info = hca.Info;
 			Log.WriteLine($"HCA Data Ver.{string.Format("{0,0:X4}", info.Version)}");
-			Log.WriteLine($"Data Offset      : {string.Format("0x{0,0:X8}", info.DataOffset)}");
-			Log.WriteLine($"Channel Count    : {info.ChannelCount}");
-			Log.WriteLine($"Sample Rate      : {info.SampleRate}");
-			Log.WriteLine($"Frame Count      : {info.FrameCount}");
-			Log.WriteLine($"Frame Size       : {info.FrameSize}");
+			Log.WriteLine($"Data Offset	  : {string.Format("0x{0,0:X8}", info.DataOffset)}");
+			Log.WriteLine($"Channel Count	: {info.ChannelCount}");
+			Log.WriteLine($"Sample Rate	  : {info.SampleRate}");
+			Log.WriteLine($"Frame Count	  : {info.FrameCount}");
+			Log.WriteLine($"Frame Size	   : {info.FrameSize}");
 			Log.WriteLine($"Min Resolution   : {info.MinResolution}");
 			Log.WriteLine($"Max Resolution   : {info.MaxResolution}");
-			Log.WriteLine($"Track Count      : {info.TrackCount}");
+			Log.WriteLine($"Track Count	  : {info.TrackCount}");
 			Log.WriteLine($"Channel Config   : {info.ChannelConfig}");
 			Log.WriteLine($"Total Band Count : {info.TotalBandCount}");
 			Log.WriteLine($"Base Band Count  : {info.BaseBandCount}");
@@ -34,7 +42,7 @@ namespace CRIAudio.CLI
 			Log.WriteLine($"Hfr Band Cound   : {info.HfrBandCount}");
 			Log.WriteLine($"Bands/HfrGroup   : {info.BandsPerHfrGroup}");
 			Log.WriteLine($"Hfr Group Count  : {info.HfrGroupCount}");
-			Log.WriteLine($"MS Stereo        : {info.MSStereo}");
+			Log.WriteLine($"MS Stereo		: {info.MSStereo}");
 			Log.WriteLine();
 
 			/*byte[] data = {

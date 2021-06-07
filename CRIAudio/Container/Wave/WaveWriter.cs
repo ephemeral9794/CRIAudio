@@ -16,7 +16,7 @@ namespace CRIAudio.Container.Wave
 		PCM_FLOAT = 32,
 	}
 
-	public class WaveWriter
+	public static class WaveWriter
 	{
 		public static void WriteData(WaveData data, Stream stream)
 		{
