@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using CRIAudio.Utility;
 using static CRIAudio.Decoder.HCA.HCAConstants;
