@@ -16,9 +16,8 @@ namespace CRIAudio.CLI
 			Log.Visible = true;
 			string file = "";
 			if (args.Length != 1) {
-				//file = @"C:\Users\Administrator\Desktop\ウマ娘\export\1081\snd_bgm_live_1081_chara_1058_01.awb";
-                file = @"C:\Users\Administrator\Desktop\ウマ娘\export\1081\snd_bgm_live_1081_chara_1058_01.acb";
-                //file = @"C:\Users\147740\Desktop\Util\snd_bgm_live_1001_oke_01.awb";
+				Log.WriteLine("Usage: CRIAudio.CLI.exe [file]");
+				return;
             }
             else {
 				file = args[0];
@@ -35,44 +34,52 @@ namespace CRIAudio.CLI
                             var bin = File.ReadAllBytes(file);
                             var afs2 = AFS2Reader.ReadData(bin);
 
-                            var hca = HCAData.ReadData(afs2[0].Binary, new HCAKey(0x0000450D608C479F, afs2.Info.SubKey));
+                            Log.WriteLine($"AFS2 Ver.{string.Format("{0,0:X4}", afs2.Info.Version)}");
+                            Log.WriteLine($"File Count       : {afs2.Info.FileCount}");
+							Log.WriteLine();
 
-                            var info = hca.Info;
-                            Log.WriteLine($"HCA Data Ver.{string.Format("{0,0:X4}", info.Version)}");
-                            Log.WriteLine($"Data Offset	     : {string.Format("0x{0,0:X8}", info.DataOffset)}");
-                            Log.WriteLine($"Channel Count	 : {info.ChannelCount}");
-                            Log.WriteLine($"Sample Rate	     : {info.SampleRate}");
-                            Log.WriteLine($"Frame Count	     : {info.FrameCount}");
-                            Log.WriteLine($"Frame Size	     : {info.FrameSize}");
-                            Log.WriteLine($"Min Resolution   : {info.MinResolution}");
-                            Log.WriteLine($"Max Resolution   : {info.MaxResolution}");
-                            Log.WriteLine($"Track Count	     : {info.TrackCount}");
-                            Log.WriteLine($"Channel Config   : {info.ChannelConfig}");
-                            Log.WriteLine($"Total Band Count : {info.TotalBandCount}");
-                            Log.WriteLine($"Base Band Count  : {info.BaseBandCount}");
-                            Log.WriteLine($"Stereo Band Count: {info.StereoBandCount}");
-                            Log.WriteLine($"Hfr Band Cound   : {info.HfrBandCount}");
-                            Log.WriteLine($"Bands/HfrGroup   : {info.BandsPerHfrGroup}");
-                            Log.WriteLine($"Hfr Group Count  : {info.HfrGroupCount}");
-                            Log.WriteLine($"MS Stereo		 : {info.MSStereo}");
-                            Log.WriteLine();
+							for ( int i = 0; i < afs2.Info.FileCount; i++ ) { 
 
-                            hca.Decode();
+								var hca = HCAData.ReadData(afs2[i].Binary, new HCAKey(0x0000450D608C479F, afs2.Info.SubKey));
 
-                            var wav = WaveWriter.ConvertToInt16(hca.Waves);
+								var info = hca.Info;
+                                Log.WriteLine($"--- AFS2 Track #{i} ---");
+                                Log.WriteLine($"HCA Data Ver.{string.Format("{0,0:X4}", info.Version)}");
+								Log.WriteLine($"Data Offset	     : {string.Format("0x{0,0:X8}", info.DataOffset)}");
+								Log.WriteLine($"Channel Count	 : {info.ChannelCount}");
+								Log.WriteLine($"Sample Rate	     : {info.SampleRate}");
+								Log.WriteLine($"Frame Count	     : {info.FrameCount}");
+								Log.WriteLine($"Frame Size	     : {info.FrameSize}");
+								Log.WriteLine($"Min Resolution   : {info.MinResolution}");
+								Log.WriteLine($"Max Resolution   : {info.MaxResolution}");
+								Log.WriteLine($"Track Count	     : {info.TrackCount}");
+								Log.WriteLine($"Channel Config   : {info.ChannelConfig}");
+								Log.WriteLine($"Total Band Count : {info.TotalBandCount}");
+								Log.WriteLine($"Base Band Count  : {info.BaseBandCount}");
+								Log.WriteLine($"Stereo Band Count: {info.StereoBandCount}");
+								Log.WriteLine($"Hfr Band Cound   : {info.HfrBandCount}");
+								Log.WriteLine($"Bands/HfrGroup   : {info.BandsPerHfrGroup}");
+								Log.WriteLine($"Hfr Group Count  : {info.HfrGroupCount}");
+								Log.WriteLine($"MS Stereo		 : {info.MSStereo}");
+								Log.WriteLine();
 
-                            WaveInfo wavInfo = new WaveInfo
-                            {
-                                Format = WaveFormat.PCM,
-                                SampleRate = hca.Info.SampleRate,
-                                ChannelCount = (ushort)hca.Info.ChannelCount,
-                                BitsPerSample = 16
-                            };
-                            string outfile = @"output.wav";
-                            using (var stream = new FileStream(outfile, FileMode.OpenOrCreate, FileAccess.Write))
-                            {
-                                WaveWriter.WriteData(new WaveData { Info = wavInfo, AudioData = wav }, stream);
-                            }
+								hca.Decode();
+
+								var wav = WaveWriter.ConvertToInt16(hca.Waves);
+
+								WaveInfo wavInfo = new WaveInfo
+								{
+									Format = WaveFormat.PCM,
+									SampleRate = hca.Info.SampleRate,
+									ChannelCount = (ushort)hca.Info.ChannelCount,
+									BitsPerSample = 16
+								};
+								string outfile = string.Format(file.Substring(0, file.Length - 4) + "_{0:00}.wav", i);
+								using (var stream = new FileStream(outfile, FileMode.OpenOrCreate, FileAccess.Write))
+								{
+									WaveWriter.WriteData(new WaveData { Info = wavInfo, AudioData = wav }, stream);
+								}
+							}
                         }
 						break;
 					case "acb":
