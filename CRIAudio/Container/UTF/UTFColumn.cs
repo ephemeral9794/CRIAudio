@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
 
 namespace CRIAudio.Container.UTF
 {
@@ -33,33 +31,75 @@ namespace CRIAudio.Container.UTF
         public UTFDataType DataType { get; set; }
         public uint NameOffset { get; set; }
         public string Name { get; set; }
+        public UTFColumnData ColumnData { get; set; }
     }
 
     public struct UTFColumnData
     {
-        public UTFColumnData(byte input) : this(new byte[1] {input}) { }
-        public UTFColumnData(sbyte input) : this(new byte[1] { (byte)input }) { }
-        public UTFColumnData(ushort input) : this(BitConverter.GetBytes(input)) { }
-        public UTFColumnData(short input) : this(BitConverter.GetBytes(input)) { }
-        public UTFColumnData(uint input) : this(BitConverter.GetBytes(input)) { }
-        public UTFColumnData(int input) : this(BitConverter.GetBytes(input)) { }
-        public UTFColumnData(ulong input) : this(BitConverter.GetBytes(input)) { }
-        public UTFColumnData(long input) : this(BitConverter.GetBytes(input)) { }
-        public UTFColumnData(float input) : this(BitConverter.GetBytes(input)) { }
-        public UTFColumnData(double input) : this(BitConverter.GetBytes(input)) { }
-        private UTFColumnData(byte[] input)
+        public UTFColumnData(byte input) : this(new byte[] {input}, UTFDataType.UInt8) { }
+        public UTFColumnData(sbyte input) : this(new byte[] { (byte)input }, UTFDataType.Int8) { }
+        public UTFColumnData(ushort input) : this(BitConverter.GetBytes(input), UTFDataType.UInt16) { }
+        public UTFColumnData(short input) : this(BitConverter.GetBytes(input), UTFDataType.Int16) { }
+        public UTFColumnData(uint input) : this(BitConverter.GetBytes(input), UTFDataType.UInt32) { }
+        public UTFColumnData(int input) : this(BitConverter.GetBytes(input), UTFDataType.Int32) { }
+        public UTFColumnData(ulong input) : this(BitConverter.GetBytes(input), UTFDataType.UInt64) { }
+        public UTFColumnData(long input) : this(BitConverter.GetBytes(input), UTFDataType.Int64) { }
+        public UTFColumnData(float input) : this(BitConverter.GetBytes(input), UTFDataType.Float) { }
+        public UTFColumnData(double input) : this(BitConverter.GetBytes(input), UTFDataType.Double) { }
+        public UTFColumnData(byte input, UTFDataType type) : this(new byte[] { input }, type) { }
+        public UTFColumnData(sbyte input, UTFDataType type) : this(new byte[] { (byte)input }, type) { }
+        public UTFColumnData(ushort input, UTFDataType type) : this(BitConverter.GetBytes(input), type) { }
+        public UTFColumnData(short input, UTFDataType type) : this(BitConverter.GetBytes(input), type) { }
+        public UTFColumnData(uint input, UTFDataType type) : this(BitConverter.GetBytes(input), type) { }
+        public UTFColumnData(int input, UTFDataType type) : this(BitConverter.GetBytes(input), type) { }
+        public UTFColumnData(ulong input, UTFDataType type) : this(BitConverter.GetBytes(input), type) { }
+        public UTFColumnData(long input, UTFDataType type) : this(BitConverter.GetBytes(input), type) { }
+        public UTFColumnData(float input, UTFDataType type) : this(BitConverter.GetBytes(input), type) { }
+        public UTFColumnData(double input, UTFDataType type) : this(BitConverter.GetBytes(input), type) { }
+        private UTFColumnData(byte[] input, UTFDataType type)
         {
             data = new byte[8];
+            this.type = type;
             Array.Clear(data);
             Array.Copy(input, 0, data, 0, input.Length);
         }
 
         public override string ToString()
         {
-            return string.Format("0x{0,0:X16}", BitConverter.ToUInt64(data));
+            switch (type)
+            {
+                case UTFDataType.UInt8:
+                    return UInt8.ToString();
+                case UTFDataType.Int8:
+                    return Int8.ToString();
+                case UTFDataType.UInt16:
+                    return UInt16.ToString();
+                case UTFDataType.Int16:
+                    return Int16.ToString();
+                case UTFDataType.UInt32:
+                    return UInt32.ToString();
+                case UTFDataType.Int32:
+                    return Int32.ToString();
+                case UTFDataType.UInt64:
+                    return UInt64.ToString();
+                case UTFDataType.Int64:
+                    return Int64.ToString();
+                case UTFDataType.Float:
+                    return Float.ToString();
+                case UTFDataType.Double:
+                    return Double.ToString();
+                case UTFDataType.String:
+                    return String.ToString();
+                case UTFDataType.Binary:
+                    return Binary.ToString();
+                default:
+                    return string.Format("0x{0,0:X16}", BitConverter.ToUInt64(data));
+            }
         }
 
+        private UTFDataType type;
         private byte[] data;
+
         public byte UInt8 { 
             get { 
                 return data[0];

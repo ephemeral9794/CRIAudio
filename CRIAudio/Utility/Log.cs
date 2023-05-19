@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CRIAudio.Utility
 {
-	public static class Log
+    public static class Log
 	{
 		static Log() {
-			logWriter = new StreamWriter(new FileStream(@".\debug.log",FileMode.OpenOrCreate, FileAccess.Write));
+			logWriter = new StreamWriter(new FileStream(@".\debug.log",FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read, 2 ^ 18));
 			Visible = false;
 		}
 		private static StreamWriter logWriter;
@@ -22,6 +18,7 @@ namespace CRIAudio.Utility
 				Console.WriteLine(s);
 			}
 			logWriter.WriteLine(s); 
+			logWriter.Flush();
 		}
 		public static void WriteLine() {
 			if (Visible)
@@ -29,6 +26,7 @@ namespace CRIAudio.Utility
 				Console.WriteLine();
 			}
 			logWriter.WriteLine();
-		}
+            logWriter.Flush();
+        }
 	}
 }

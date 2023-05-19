@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text;
+﻿using System.IO;
 using CRIAudio.Container.Wave;
 using CRIAudio.Decoder.HCA;
 using CRIAudio.Utility;
@@ -9,7 +7,7 @@ using CRIAudio.Container.UTF;
 
 namespace CRIAudio.CLI
 {
-	class Program
+    class Program
 	{
 		static void Main(string[] args)
 		{
@@ -104,7 +102,8 @@ namespace CRIAudio.CLI
                             {
                                 Log.WriteLine($"Name : {utf.Columns[i].Name}");
                                 Log.WriteLine($"\tColumn Type : {utf.Columns[i].ColumnType}");
-                                Log.WriteLine($"\tData Type : {utf.Columns[i].DataType}");
+                                Log.WriteLine($"\tData Type   : {utf.Columns[i].DataType}");
+                                Log.WriteLine($"\tData        : {utf.Columns[i].ColumnData}");
                             }
                         }
                         break;

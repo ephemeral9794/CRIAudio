@@ -1,9 +1,5 @@
-using System;
 using System.IO;
 using CRIAudio.Utility;
-using static CRIAudio.Decoder.HCA.HCAConstants;
-using static CRIAudio.Utility.Extension;
-
 
 /*** éQçlÅFhttps://subdiox.github.io/deresute/resource/criware.html ***/
 namespace CRIAudio.Container.UTF
@@ -62,6 +58,89 @@ namespace CRIAudio.Container.UTF
                 reader.Position = info.StringOffset + 8 + Offset;
                 var Name = reader.ReadStringToNull();
                 Columns[i].Name = Name;
+            }
+
+            // column data
+            int pos = 0;
+            for (int i = 0; i < info.ColumnCount; i++)
+            {
+                var DataType = Columns[i].DataType;
+                reader.Position = info.TableOffset + 8 + pos;
+                switch (DataType)
+                {
+                    case UTFDataType.UInt8:
+                        {
+                            Columns[i].ColumnData = new UTFColumnData(reader.ReadByte());
+                            pos += 1;
+                        }
+                        break;
+                    case UTFDataType.Int8:
+                        {
+                            Columns[i].ColumnData = new UTFColumnData(reader.ReadSByte());
+                            pos += 1;
+                        }
+                        break;
+                    case UTFDataType.UInt16:
+                        {
+                            Columns[i].ColumnData = new UTFColumnData(reader.ReadUInt16());
+                            pos += 2;
+                        }
+                        break;
+                    case UTFDataType.Int16:
+                        {
+                            Columns[i].ColumnData = new UTFColumnData(reader.ReadInt16());
+                            pos += 2;
+                        }
+                        break;
+                    case UTFDataType.UInt32:
+                        {
+                            Columns[i].ColumnData = new UTFColumnData(reader.ReadUInt32());
+                            pos += 4;
+                        }
+                        break;
+                    case UTFDataType.Int32:
+                        {
+                            Columns[i].ColumnData = new UTFColumnData(reader.ReadInt32());
+                            pos += 4;
+                        }
+                        break;
+                    case UTFDataType.UInt64:
+                        {
+                            Columns[i].ColumnData = new UTFColumnData(reader.ReadUInt64());
+                            pos += 8;
+                        }
+                        break;
+                    case UTFDataType.Int64:
+                        {
+                            Columns[i].ColumnData = new UTFColumnData(reader.ReadInt64());
+                            pos += 8;
+                        }
+                        break;
+                    case UTFDataType.Float:
+                        {
+                            Columns[i].ColumnData = new UTFColumnData(reader.ReadSingle());
+                            pos += 4;
+                        }
+                        break;
+                    case UTFDataType.Double:
+                        {
+                            Columns[i].ColumnData = new UTFColumnData(reader.ReadDouble());
+                            pos += 8;
+                        }
+                        break;
+                    case UTFDataType.String:
+                        {
+                            Columns[i].ColumnData = new UTFColumnData(reader.ReadUInt32(), UTFDataType.String);
+                            pos += 4;
+                        }
+                        break;
+                    case UTFDataType.Binary:
+                        {
+                            Columns[i].ColumnData = new UTFColumnData(reader.ReadUInt64(), UTFDataType.Binary);
+                            pos += 8;
+                        }
+                        break;
+                }
             }
 
             data.Columns = Columns;

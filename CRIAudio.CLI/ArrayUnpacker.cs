@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using CRIAudio.Utility;
 
 namespace CRIAudio.CLI
 {
-	static class ArrayUnpacker
+    static class ArrayUnpacker
     {
         public static readonly byte[] PackedTables =
         {
